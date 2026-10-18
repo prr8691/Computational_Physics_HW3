@@ -1,1 +1,140 @@
+import numpy as np
+import matplotlib.pyplot as plt
 
+
+# ---------------------------------------------------------
+# Problem 7.9: Image Deconvolution
+# ---------------------------------------------------------
+
+# Load the blurred image
+blurred = np.loadtxt("blur.txt")
+
+# Get the size of the image
+rows, columns = blurred.shape
+
+print("Image size =", rows, "x", columns)
+
+
+# ---------------------------------------------------------
+# Figure 1: Blurred image
+# ---------------------------------------------------------
+
+plt.figure(figsize=(7, 6))
+
+plt.imshow(
+    blurred,
+    cmap="gray",
+    origin="upper"
+)
+
+plt.title("Blurred Image")
+plt.axis("off")
+
+plt.tight_layout()
+plt.savefig("hw3_problem3_blurred.png", dpi=200)
+plt.show()
+
+
+# ---------------------------------------------------------
+# Create the Gaussian point spread function
+# ---------------------------------------------------------
+
+sigma = 25.0
+
+# Make arrays for the x and y positions
+x = np.arange(columns)
+y = np.arange(rows)
+
+# The Fourier transform treats the image as periodic.
+# Values in the second half of each axis represent
+# negative positions.
+x = np.where(x < columns / 2, x, x - columns)
+y = np.where(y < rows / 2, y, y - rows)
+
+# Make a two-dimensional grid
+X, Y = np.meshgrid(x, y)
+
+# Gaussian point spread function
+psf = np.exp(
+    -(X**2 + Y**2) / (2 * sigma**2)
+)
+
+
+# ---------------------------------------------------------
+# Figure 2: Point spread function
+# ---------------------------------------------------------
+
+plt.figure(figsize=(7, 6))
+
+plt.imshow(
+    psf,
+    cmap="gray",
+    origin="upper"
+)
+
+plt.title("Gaussian Point Spread Function")
+plt.axis("off")
+
+plt.tight_layout()
+plt.savefig("hw3_problem3_psf.png", dpi=200)
+plt.show()
+
+
+# ---------------------------------------------------------
+# Fourier transforms
+# ---------------------------------------------------------
+
+# Fourier transform the blurred image
+blurred_fourier = np.fft.rfft2(blurred)
+
+# Fourier transform the point spread function
+psf_fourier = np.fft.rfft2(psf)
+
+
+# ---------------------------------------------------------
+# Deconvolution
+# ---------------------------------------------------------
+
+epsilon = 1e-3
+
+# Start with a copy of the blurred Fourier coefficients
+unblurred_fourier = blurred_fourier.copy()
+
+# Only divide where the Fourier transform of the
+# point spread function is large enough
+mask = np.abs(psf_fourier) > epsilon
+
+unblurred_fourier[mask] = (
+    blurred_fourier[mask]
+    / psf_fourier[mask]
+)
+
+
+# ---------------------------------------------------------
+# Inverse Fourier transform
+# ---------------------------------------------------------
+
+unblurred = np.fft.irfft2(
+    unblurred_fourier,
+    s=blurred.shape
+)
+
+
+# ---------------------------------------------------------
+# Figure 3: Deblurred image
+# ---------------------------------------------------------
+
+plt.figure(figsize=(7, 6))
+
+plt.imshow(
+    unblurred,
+    cmap="gray",
+    origin="upper"
+)
+
+plt.title("Reconstructed Image")
+plt.axis("off")
+
+plt.tight_layout()
+plt.savefig("hw3_problem3_deblurred.png", dpi=200)
+plt.show()
