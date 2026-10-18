@@ -1,1 +1,75 @@
+import numpy as np
+import matplotlib.pyplot as plt
 
+# Load the sunspot data
+# Column 1 is month and column 2 is sunspot number
+data = np.loadtxt("sunspots.txt")
+
+months = data[:, 0]
+sunspots = data[:, 1]
+
+# Number of data points
+N = len(sunspots)
+
+print("Number of data points =", N)
+
+
+# Plot the monthly sunspot data
+plt.figure(figsize=(8, 5))
+
+plt.plot(months, sunspots)
+
+plt.xlabel("Month")
+plt.ylabel("Sunspot number")
+plt.title("Monthly Sunspot Number")
+
+plt.tight_layout()
+plt.savefig("hw3_problem1_sunspots.png", dpi=200)
+plt.show()
+
+
+# Calculate the Fourier transform
+coefficients = np.fft.rfft(sunspots)
+
+# Calculate the power spectrum
+power = np.abs(coefficients)**2
+
+# Fourier index values
+k = np.arange(len(power))
+
+
+# Ignore k = 0 when finding the main periodic peak
+peak_k = np.argmax(power[1:]) + 1
+
+# Convert the Fourier index into a period in months
+period_months = N / peak_k
+period_years = period_months / 12
+
+
+print("Main Fourier peak k =", peak_k)
+print("Period in months =", period_months)
+print("Period in years =", period_years)
+
+
+# Plot the power spectrum
+# Only the first 100 Fourier indices are shown so the main peak is clear
+plt.figure(figsize=(8, 5))
+
+plt.plot(k[1:101], power[1:101])
+
+# Mark the main Fourier peak
+plt.axvline(
+    peak_k,
+    linestyle="--",
+    label=f"Peak at k = {peak_k}"
+)
+
+plt.xlabel("Fourier index k")
+plt.ylabel(r"$|c_k|^2$")
+plt.title("Power Spectrum of Sunspot Data")
+
+plt.legend()
+plt.tight_layout()
+
+plt.savefig("hw3_problem1_power.png", dpi=200)
+plt.show()
