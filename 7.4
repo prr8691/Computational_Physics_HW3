@@ -1,1 +1,102 @@
 
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+# ---------------------------------------------------------
+# Problem 7.4: Fourier Filtering and Smoothing
+# ---------------------------------------------------------
+
+# Load the Dow Jones data
+dow = np.loadtxt("dow.txt")
+
+# Trading-day numbers for the x-axis
+days = np.arange(len(dow))
+
+
+# ---------------------------------------------------------
+# Figure 1: Original Dow Jones data
+# ---------------------------------------------------------
+
+plt.figure(figsize=(8, 5))
+
+plt.plot(days, dow)
+
+plt.xlabel("Trading day")
+plt.ylabel("Dow Jones closing value")
+plt.title("Dow Jones Daily Closing Values")
+
+plt.tight_layout()
+plt.savefig("hw3_problem2_dow.png", dpi=200)
+plt.show()
+
+
+# ---------------------------------------------------------
+# Calculate the Fourier transform
+# ---------------------------------------------------------
+
+coefficients = np.fft.rfft(dow)
+
+
+# ---------------------------------------------------------
+# Keep only the first 10 percent of the coefficients
+# ---------------------------------------------------------
+
+coeff_10 = coefficients.copy()
+
+keep_10 = int(0.10 * len(coeff_10))
+
+# Set the higher-frequency coefficients equal to zero
+coeff_10[keep_10:] = 0
+
+# Transform the filtered coefficients back to the time domain
+dow_10 = np.fft.irfft(coeff_10, n=len(dow))
+
+
+# Plot the original data and the 10 percent result
+plt.figure(figsize=(8, 5))
+
+plt.plot(days, dow, label="Original data")
+plt.plot(days, dow_10, label="10% Fourier smoothing")
+
+plt.xlabel("Trading day")
+plt.ylabel("Dow Jones closing value")
+plt.title("Dow Jones Data with 10% Fourier Smoothing")
+
+plt.legend()
+plt.tight_layout()
+
+plt.savefig("hw3_problem2_10percent.png", dpi=200)
+plt.show()
+
+
+# ---------------------------------------------------------
+# Keep only the first 2 percent of the coefficients
+# ---------------------------------------------------------
+
+coeff_2 = coefficients.copy()
+
+keep_2 = int(0.02 * len(coeff_2))
+
+# Set the rest of the coefficients equal to zero
+coeff_2[keep_2:] = 0
+
+# Transform back to the time domain
+dow_2 = np.fft.irfft(coeff_2, n=len(dow))
+
+
+# Plot the original data and the 2 percent result
+plt.figure(figsize=(8, 5))
+
+plt.plot(days, dow, label="Original data")
+plt.plot(days, dow_2, label="2% Fourier smoothing")
+
+plt.xlabel("Trading day")
+plt.ylabel("Dow Jones closing value")
+plt.title("Dow Jones Data with 2% Fourier Smoothing")
+
+plt.legend()
+plt.tight_layout()
+
+plt.savefig("hw3_problem2_2percent.png", dpi=200)
+plt.show()
